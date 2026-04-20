@@ -1,0 +1,4 @@
+".\Objects\STARTUP.obj",
+".\Objects\final_code.obj" 
+TO ".\Objects\embc_proj" 
+PRINT(".\Listings\embc_proj.m51") RAMSIZE(256) 

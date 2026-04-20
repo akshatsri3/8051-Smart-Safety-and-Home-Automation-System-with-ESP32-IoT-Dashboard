@@ -1,0 +1,157 @@
+C51 COMPILER V9.60.7.0   FINAL_CODE                                                        04/16/2026 21:23:54 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE FINAL_CODE
+OBJECT MODULE PLACED IN .\Objects\final_code.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE final_code.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\final_code.lst) TABS(2) OBJECT(.\Objects\final_code.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          // LCD control pins
+   4          sbit RS = P3^0;
+   5          sbit RW = P3^1;
+   6          sbit EN = P3^2;
+   7          
+   8          // Sensors
+   9          sbit GAS_Sensor   = P0^7;   // (DUMMY - not used)
+  10          sbit Flame_Sensor = P0^6;
+  11          
+  12          // Output
+  13          sbit Relay  = P2^3;   // Relay (LED connected through relay)
+  14          
+  15          // Function declarations
+  16          void lcd_cmd(unsigned char);
+  17          void lcd_data(unsigned char);
+  18          void lcd_init();
+  19          void lcd_string(unsigned char *);
+  20          void delay(unsigned int);
+  21          
+  22          // Read flame sensor (stable)
+  23          bit flame_detected()
+  24          {
+  25   1          if(Flame_Sensor == 0)
+  26   1          {
+  27   2              delay(20);
+  28   2              if(Flame_Sensor == 0)
+  29   2                  return 1;
+  30   2          }
+  31   1          return 0;
+  32   1      }
+  33          
+  34          void main() {
+  35   1      
+  36   1          lcd_init();
+  37   1      
+  38   1          Relay = 1;   // OFF initially (active LOW)
+  39   1      
+  40   1          lcd_cmd(0x80);
+  41   1          lcd_string("System Starting");
+  42   1      
+  43   1          delay(2000);
+  44   1          lcd_cmd(0x01);
+  45   1      
+  46   1          while(1)
+  47   1          {
+  48   2              // ?? Read ONLY flame sensor
+  49   2              bit flame = flame_detected();
+  50   2      
+  51   2              // ?? Relay logic: ONLY flame
+  52   2              if(flame)
+  53   2              {
+  54   3                  Relay = 0;   // ON ? LED via relay ON
+C51 COMPILER V9.60.7.0   FINAL_CODE                                                        04/16/2026 21:23:54 PAGE 2   
+
+  55   3                  delay(300);  // stability
+  56   3              }
+  57   2              else
+  58   2              {
+  59   3                  Relay = 1;   // OFF
+  60   3              }
+  61   2      
+  62   2              // ?? Flame detection
+  63   2              if(flame)
+  64   2              {
+  65   3                  lcd_cmd(0x80);
+  66   3                  lcd_string("Flame Detected ");
+  67   3      
+  68   3                  lcd_cmd(0xC0);
+  69   3                  lcd_string("DANGER !!!      ");
+  70   3      
+  71   3                  delay(300);
+  72   3              }
+  73   2      
+  74   2              // ? Safe condition
+  75   2              else
+  76   2              {
+  77   3                  lcd_cmd(0x80);
+  78   3                  lcd_string("All Safe       ");
+  79   3      
+  80   3                  lcd_cmd(0xC0);
+  81   3                  lcd_string("No Hazard      ");
+  82   3      
+  83   3                  delay(300);
+  84   3              }
+  85   2          }
+  86   1      }
+  87          
+  88          // LCD Initialization
+  89          void lcd_init() {
+  90   1          lcd_cmd(0x38);
+  91   1          lcd_cmd(0x0C);
+  92   1          lcd_cmd(0x06);
+  93   1          lcd_cmd(0x01);
+  94   1          delay(2);
+  95   1      }
+  96          
+  97          // LCD Command
+  98          void lcd_cmd(unsigned char cmd) {
+  99   1          P1 = cmd;
+ 100   1          RS = 0;
+ 101   1          RW = 0;
+ 102   1          EN = 1;
+ 103   1          delay(1);
+ 104   1          EN = 0;
+ 105   1      }
+ 106          
+ 107          // LCD Data
+ 108          void lcd_data(unsigned char dat) {
+ 109   1          P1 = dat;
+ 110   1          RS = 1;
+ 111   1          RW = 0;
+ 112   1          EN = 1;
+ 113   1          delay(1);
+ 114   1          EN = 0;
+ 115   1      }
+ 116          
+C51 COMPILER V9.60.7.0   FINAL_CODE                                                        04/16/2026 21:23:54 PAGE 3   
+
+ 117          // LCD String
+ 118          void lcd_string(unsigned char *str) {
+ 119   1          while(*str) {
+ 120   2              lcd_data(*str++);
+ 121   2          }
+ 122   1      }
+ 123          
+ 124          // Delay
+ 125          void delay(unsigned int time) {
+ 126   1          unsigned int i, j;
+ 127   1          for(i = 0; i < time; i++)
+ 128   1              for(j = 0; j < 1275; j++);
+ 129   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    270    ----
+   CONSTANT SIZE    =     81    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
